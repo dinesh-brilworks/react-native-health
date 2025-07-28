@@ -46,35 +46,41 @@
 
 
 - (void)characteristic_getDateOfBirth:(NSDictionary *)input callback:(RCTResponseSenderBlock)callback {
-    NSError *error;
-    NSDate *dob = [self.healthStore dateOfBirthWithError:&error];
+    NSError *error = nil;
+    NSDateComponents *dobComponents = [self.healthStore dateOfBirthComponentsWithError:&error];
 
-    if(error != nil){
+    if (error != nil) {
         callback(@[RCTJSErrorFromNSError(error)]);
         return;
     }
-    if(dob == nil) {
+
+    if (dobComponents == nil || dobComponents.year == NSNotFound) {
         NSDictionary *response = @{
-                                   @"value" : [NSNull null],
-                                   @"age" : [NSNull null]
-                                   };
+            @"value" : [NSNull null],
+            @"age" : [NSNull null]
+        };
         callback(@[[NSNull null], response]);
         return;
     }
 
+    // Convert components to NSDate
+    NSCalendar *calendar = [NSCalendar currentCalendar];
+    NSDate *dob = [calendar dateFromComponents:dobComponents];
+
     NSString *dobString = [RCTAppleHealthKit buildISO8601StringFromDate:dob];
 
     NSDate *now = [NSDate date];
-    NSDateComponents *ageComponents = [[NSCalendar currentCalendar] components:NSCalendarUnitYear fromDate:dob toDate:now options:NSCalendarWrapComponents];
+    NSDateComponents *ageComponents = [calendar components:NSCalendarUnitYear fromDate:dob toDate:now options:0];
     NSUInteger ageInYears = ageComponents.year;
 
     NSDictionary *response = @{
-            @"value" : dobString,
-            @"age" : @(ageInYears),
+        @"value" : dobString,
+        @"age" : @(ageInYears)
     };
 
     callback(@[[NSNull null], response]);
 }
+
 
 - (void)characteristic_getBloodType:(NSDictionary *)input callback:(RCTResponseSenderBlock)callback {
     NSError *error;
