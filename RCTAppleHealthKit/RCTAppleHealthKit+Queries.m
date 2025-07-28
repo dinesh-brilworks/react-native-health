@@ -134,7 +134,15 @@
                 
                 if(done) {
                     //all batches successfully completed
-                    NSData *anchorData = [NSKeyedArchiver archivedDataWithRootObject:newAnchor];
+                    NSError *error = nil;
+                    NSData *anchorData = [NSKeyedArchiver archivedDataWithRootObject:newAnchor
+                                                                 requiringSecureCoding:YES
+                                                                               error:&error];
+                    if (error) {
+                        NSLog(@"Failed to archive HKQueryAnchor: %@", error);
+                        completion(nil, error);
+                        return;
+                    }
                     NSString *anchorString = [anchorData base64EncodedStringWithOptions:0];
                     NSString *start = [RCTAppleHealthKit buildISO8601StringFromDate:routeSample.startDate];
                     NSString *end = [RCTAppleHealthKit buildISO8601StringFromDate:routeSample.endDate];
@@ -559,7 +567,15 @@
                     }
                 }
 
-                NSData *anchorData = [NSKeyedArchiver archivedDataWithRootObject:newAnchor];
+                NSError *error = nil;
+                NSData *anchorData = [NSKeyedArchiver archivedDataWithRootObject:newAnchor
+                                                             requiringSecureCoding:YES
+                                                                           error:&error];
+                if (error) {
+                    NSLog(@"Failed to archive HKQueryAnchor: %@", error);
+                    completion(nil, error);
+                    return;
+                }
                 NSString *anchorString = [anchorData base64EncodedStringWithOptions:0];
                 completion(@{
                             @"anchor": anchorString,
