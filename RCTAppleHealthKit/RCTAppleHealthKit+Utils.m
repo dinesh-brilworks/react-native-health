@@ -264,24 +264,13 @@ NSString * const kMetadataKey = @"metadata";
     NSData *anchorData = [[NSData alloc] initWithBase64EncodedString:anchorString options:0];
     if (!anchorData) return nil;
 
-    HKQueryAnchor *anchor = nil;
-    if (@available(iOS 12.0, *)) {
-        NSError *error = nil;
-        anchor = [NSKeyedUnarchiver unarchivedObjectOfClass:[HKQueryAnchor class]
-                                                    fromData:anchorData
-                                                       error:&error];
-        if (error) {
-            NSLog(@"Failed to unarchive HKQueryAnchor: %@", error);
-            return nil;
-        }
-    } else {
-        // Fallback for iOS versions below 12.0
-        @try {
-            anchor = [NSKeyedUnarchiver unarchiveObjectWithData:anchorData];
-        } @catch (NSException *exception) {
-            NSLog(@"Exception while unarchiving HKQueryAnchor: %@", exception);
-            return nil;
-        }
+    NSError *error = nil;
+    HKQueryAnchor *anchor = [NSKeyedUnarchiver unarchivedObjectOfClass:[HKQueryAnchor class]
+                                                                fromData:anchorData
+                                                                   error:&error];
+    if (error) {
+        NSLog(@"Failed to unarchive HKQueryAnchor: %@", error);
+        return nil;
     }
 
     return anchor;
